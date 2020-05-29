@@ -16,6 +16,7 @@ import time
 import argparse
 
 import serial
+import requests
 from influxdb import InfluxDBClient
 
 __author__ = "Normand Cyr"
@@ -119,9 +120,19 @@ def main(args):
             temperature, humidity = get_serial_data(serial_port, baud_rate)
 
             if args.db:
-                save_to_db(args, temperature, humidity)
+                try:
+                    save_to_db(args, temperature, humidity)
+                except requests.exceptions.ConnectionError:
+                    print("Cannot reach the database server. Is it running?")
+                    break
+
             if args.csv:
-                save_to_csv(args, temperature, humidity)
+                try:
+                    save_to_csv(args, temperature, humidity)
+                except PermissionError:
+                    print("You do not have write permission.")
+                    break
+
             if args.stdout:
                 print_stdout(temperature, humidity)
 
