@@ -129,6 +129,11 @@ def main(args):
             print("Port {} is unavailable.".format(serial_port))
             break
 
+        except ValueError:
+            print("Failed to read from DHT sensor!")
+            time.sleep(30)
+            pass
+
         except IndexError:
             print(
                 "The output format from the serial data is incorrect. Please review your Arduino code."
