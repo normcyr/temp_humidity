@@ -64,7 +64,7 @@ def save_to_db(args, temperature, humidity):
         }
     ]
 
-    db_client = InfluxDBClient(host=args.host, port=args.port)
+    db_client = InfluxDBClient(host=args.dbhost, port=args.dbport)
     db_client.create_database(args.db)
     db_client.switch_database(args.db)
     db_client.write_points(json_body, protocol="json")
@@ -76,14 +76,21 @@ def parse_args():
         description="Arguments to specify the behaviour of the script."
     )
     parser.add_argument(
-        "--host",
+        "--serialport",
+        type=str,
+        required=False,
+        default="/dev/ttyACM0",
+        help="location of the serial port",
+    )
+    parser.add_argument(
+        "--dbhost",
         type=str,
         required=False,
         default="localhost",
         help="hostname of InfluxDB http API",
     )
     parser.add_argument(
-        "--port",
+        "--dbport",
         type=int,
         required=False,
         default=8086,
@@ -112,12 +119,11 @@ def parse_args():
 
 def main(args):
 
-    serial_port = "/dev/ttyACM1"
     baud_rate = 9600
 
     while True:
         try:
-            temperature, humidity = get_serial_data(serial_port, baud_rate)
+            temperature, humidity = get_serial_data(args.serialport, baud_rate)
 
             if args.db:
                 try:
